@@ -62,6 +62,32 @@ bencode_value parse_value(std::string_view& in){
         return bencode_value{parse_int(in) };
     }
 
+    if (c == 'l') {
+        return bencode_value{parse_list(in)};
+    }
+
 
     throw std::runtime_error("byte invalido encontrado no bencode");
+}
+
+bencode_list parse_list(std::string_view& in) {
+    if (in.empty() || in.front() != 'l') {
+        throw std::runtime_error("erro: parse_list esperado 'l'");
+    }
+
+    in.remove_prefix(1); // consome 'l'
+
+    bencode_list list; // std::vector<bencode_value>
+
+    while (!in.empty() && in.front() != 'e') {
+        list.push_back(parse_value(in)); // recursão
+    }
+
+    if (in.empty()) {
+        throw std::runtime_error("lista nao fechada: sem 'e' no final");
+    }
+
+    in.remove_prefix(1);
+
+    return list;
 }

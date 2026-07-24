@@ -1,0 +1,22 @@
+# Diretórios e arquivos de build
+build/
+bin/
+lib/
+compile_commands.json
+.clangd
+
+# Pasta de testes (conforme solicitado)
+tests/
+
+# Binários e executáveis
+*.exe
+*.a
+*.o
+*.obj
+*.dll
+
+# IDEs e Editores
+.vs/
+.vscode/
+.idea/
+*.user

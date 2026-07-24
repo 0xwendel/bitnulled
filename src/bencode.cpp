@@ -66,6 +66,10 @@ bencode_value parse_value(std::string_view& in){
         return bencode_value{parse_list(in)};
     }
 
+    if (c == 'd') {
+        return bencode_value{parse_dict(in)};
+    }
+
 
     throw std::runtime_error("byte invalido encontrado no bencode");
 }
@@ -90,4 +94,34 @@ bencode_list parse_list(std::string_view& in) {
     in.remove_prefix(1);
 
     return list;
+}
+
+bencode_dict parse_dict(std::string_view& in) {
+    if (in.empty() || in.front() != 'd') {
+        throw std::runtime_error("erro: parse_dict esperado: 'd'");
+    }
+
+    in.remove_prefix(1); // 'd'
+
+    bencode_dict dict;
+
+    while(!in.empty() && in.front() != 'e') {
+        if (!std::isdigit(in.front())) {
+            throw std::runtime_error("a chave DEVE ser uma string");
+        }
+
+        bencode_string key = parse_string(in);
+
+        bencode_value val = parse_value(in);
+        
+        dict[key] = val;
+    }
+
+    if (in.empty()) {
+        throw std::runtime_error("dict nao fechado: sem 'e' no final");
+    }
+
+    in.remove_prefix(1);
+
+    return dict;
 }

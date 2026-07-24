@@ -21,3 +21,4 @@ bencode_string parse_string(std::string_view& in);
 bencode_int parse_int(std::string_view& in);
 bencode_value parse_value(std::string_view& in);
 bencode_list parse_list(std::string_view& in);
+bencode_dict parse_dict(std::string_view& in);

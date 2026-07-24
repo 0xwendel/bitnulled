@@ -21,3 +21,4 @@ struct bencode_value {
 };
 
 bencode_string parse_string(std::string_view& in);
+bencode_int parse_int(std::string_view& in);

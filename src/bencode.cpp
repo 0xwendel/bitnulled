@@ -28,3 +28,21 @@ bencode_string parse_string(std::string_view& in) {
     return res;
 }
 
+bencode_int parse_int(std::string_view& in) {
+
+    in.remove_prefix(1);
+
+    // find "e"
+    size_t e_pos = in.find('e');
+    if(e_pos == std::string::npos) {
+        throw std::runtime_error("int malformatado!");
+    }
+
+    bencode_int val = std::stoull(std::string(in.substr(0,e_pos)));
+
+    in.remove_prefix(e_pos + 1);
+
+    return val;
+    
+}
+

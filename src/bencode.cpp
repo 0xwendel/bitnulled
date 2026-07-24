@@ -30,6 +30,10 @@ bencode_string parse_string(std::string_view& in) {
 
 bencode_int parse_int(std::string_view& in) {
 
+    if (in.empty() || in.front() != 'i'){
+        throw std::runtime_error("erro: parse_int chamado sem o 'i' inicial");
+    }
+
     in.remove_prefix(1);
 
     // find "e"
@@ -38,7 +42,7 @@ bencode_int parse_int(std::string_view& in) {
         throw std::runtime_error("int malformatado!");
     }
 
-    bencode_int val = std::stoull(std::string(in.substr(0,e_pos)));
+    bencode_int val = std::stoll(std::string(in.substr(0,e_pos)));
 
     in.remove_prefix(e_pos + 1);
 
@@ -46,3 +50,18 @@ bencode_int parse_int(std::string_view& in) {
     
 }
 
+bencode_value parse_value(std::string_view& in){
+    if (in.empty()) throw std::runtime_error("buffer vazio!");
+
+    char c = in.front();
+
+    if (std::isdigit(c)) {
+        return bencode_value{parse_string(in) };
+    }
+    if (c == 'i') {
+        return bencode_value{parse_int(in) };
+    }
+
+
+    throw std::runtime_error("byte invalido encontrado no bencode");
+}

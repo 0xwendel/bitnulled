@@ -8,6 +8,11 @@
 
 namespace bitnulled {
 
+struct torrent_file_entry {
+    std::filesystem::path path;
+    std::int64_t length{0};
+};
+
 struct torrent_file {
     std::string announce;
     std::vector<std::string> announce_list;
@@ -15,6 +20,7 @@ struct torrent_file {
     std::int64_t piece_length{0};
     std::string pieces;
     std::int64_t total_length{0};
+    std::vector<torrent_file_entry> files;
     std::array<uint8_t, 20> info_hash{};
     bencode_dict raw_dict;
 };

@@ -110,8 +110,37 @@ torrent_file load_torrent_file(const std::filesystem::path& file_path) {
                 }
             }
             if (auto len_it = info_dict->find("length"); len_it != info_dict->end()) {
+                // single-file mode
                 if (const auto* val = std::get_if<bencode_int>(&len_it->second.data)) {
                     torrent.total_length = *val;
+                    torrent.files.push_back({torrent.name, *val});
+                }
+            } else if (auto files_it = info_dict->find("files"); files_it != info_dict->end()) {
+                // multi-file mode
+                if (const auto* files_list = std::get_if<bencode_list>(&files_it->second.data)) {
+                    for (const auto& file_elem : *files_list) {
+                        if (const auto* f_dict = std::get_if<bencode_dict>(&file_elem.data)) {
+                            torrent_file_entry entry;
+                            if (auto f_len_it = f_dict->find("length"); f_len_it != f_dict->end()) {
+                                if (const auto* val = std::get_if<bencode_int>(&f_len_it->second.data)) {
+                                    entry.length = *val;
+                                    torrent.total_length += *val;
+                                }
+                            }
+                            if (auto f_path_it = f_dict->find("path"); f_path_it != f_dict->end()) {
+                                if (const auto* path_list = std::get_if<bencode_list>(&f_path_it->second.data)) {
+                                    std::filesystem::path rel_path;
+                                    for (const auto& p_elem : *path_list) {
+                                        if (const auto* p_str = std::get_if<bencode_string>(&p_elem.data)) {
+                                            rel_path /= *p_str;
+                                        }
+                                    }
+                                    entry.path = rel_path;
+                                }
+                            }
+                            torrent.files.push_back(entry);
+                        }
+                    }
                 }
             }
         }

@@ -5,9 +5,6 @@ lib/
 compile_commands.json
 .clangd
 
-# Pasta de testes (conforme solicitado)
-tests/
-
 # Binários e executáveis
 *.exe
 *.a

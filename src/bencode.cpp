@@ -1,76 +1,64 @@
-#include "bencode.hpp"
+#include "bitnulled/bencode.hpp"
 #include <string_view>
 #include <string>
 #include <fstream>
 #include <stdexcept>
+#include <cctype>
+
+namespace bitnulled {
 
 bencode_string parse_string(std::string_view& in) {
-    // find :
     size_t colon = in.find(":");
     if (colon == std::string_view::npos) {
         throw std::runtime_error("sem ':' na string.");
     }
 
-    // length string
-    size_t len = std::stoull(std::string(in.substr(0,colon)));
-
+    size_t len = std::stoull(std::string(in.substr(0, colon)));
     in.remove_prefix(colon + 1);
 
-    if (in.size() < len){
+    if (in.size() < len) {
         throw std::runtime_error("buffer menor que o tamanho declarado da string!");
     }
 
-    bencode_string res(in.substr(0,len));
-
-    // consome os bytes da str view
+    bencode_string res(in.substr(0, len));
     in.remove_prefix(len);
-
-
     return res;
 }
 
 bencode_int parse_int(std::string_view& in) {
-
-    if (in.empty() || in.front() != 'i'){
+    if (in.empty() || in.front() != 'i') {
         throw std::runtime_error("erro: parse_int chamado sem o 'i' inicial");
     }
 
     in.remove_prefix(1);
 
-    // find "e"
     size_t e_pos = in.find('e');
-    if(e_pos == std::string::npos) {
+    if (e_pos == std::string::npos) {
         throw std::runtime_error("int malformatado!");
     }
 
-    bencode_int val = std::stoll(std::string(in.substr(0,e_pos)));
-
+    bencode_int val = std::stoll(std::string(in.substr(0, e_pos)));
     in.remove_prefix(e_pos + 1);
-
     return val;
-    
 }
 
-bencode_value parse_value(std::string_view& in){
+bencode_value parse_value(std::string_view& in) {
     if (in.empty()) throw std::runtime_error("buffer vazio!");
 
     char c = in.front();
 
-    if (std::isdigit(c)) {
-        return bencode_value{parse_string(in) };
+    if (std::isdigit(static_cast<unsigned char>(c))) {
+        return bencode_value{parse_string(in)};
     }
     if (c == 'i') {
-        return bencode_value{parse_int(in) };
+        return bencode_value{parse_int(in)};
     }
-
     if (c == 'l') {
         return bencode_value{parse_list(in)};
     }
-
     if (c == 'd') {
         return bencode_value{parse_dict(in)};
     }
-
 
     throw std::runtime_error("byte invalido encontrado no bencode");
 }
@@ -80,12 +68,11 @@ bencode_list parse_list(std::string_view& in) {
         throw std::runtime_error("erro: parse_list esperado 'l'");
     }
 
-    in.remove_prefix(1); // consome 'l'
-
-    bencode_list list; // std::vector<bencode_value>
+    in.remove_prefix(1);
+    bencode_list list;
 
     while (!in.empty() && in.front() != 'e') {
-        list.push_back(parse_value(in)); // recursão
+        list.push_back(parse_value(in));
     }
 
     if (in.empty()) {
@@ -93,7 +80,6 @@ bencode_list parse_list(std::string_view& in) {
     }
 
     in.remove_prefix(1);
-
     return list;
 }
 
@@ -102,19 +88,16 @@ bencode_dict parse_dict(std::string_view& in) {
         throw std::runtime_error("erro: parse_dict esperado: 'd'");
     }
 
-    in.remove_prefix(1); // 'd'
-
+    in.remove_prefix(1);
     bencode_dict dict;
 
-    while(!in.empty() && in.front() != 'e') {
-        if (!std::isdigit(in.front())) {
+    while (!in.empty() && in.front() != 'e') {
+        if (!std::isdigit(static_cast<unsigned char>(in.front()))) {
             throw std::runtime_error("a chave DEVE ser uma string");
         }
 
         bencode_string key = parse_string(in);
-
         bencode_value val = parse_value(in);
-        
         dict[key] = val;
     }
 
@@ -123,33 +106,7 @@ bencode_dict parse_dict(std::string_view& in) {
     }
 
     in.remove_prefix(1);
-
     return dict;
 }
 
-std::string read_torrent_file(const std::filesystem::path& file_path) {
-    // open in binary mode at the end to get file size instantly
-    std::ifstream file(file_path, std::ios::binary | std::ios::ate);
-    if (!file.is_open()) {
-        // if this throws, check if the file path exists or if windows access rights hate you
-        throw std::runtime_error("failed to open torrent file: " + file_path.string());
-    }
-
-    const auto file_size = file.tellg();
-    if (file_size <= 0) {
-        // empty torrent file is useless anyway
-        return {};
-    }
-
-    file.seekg(0, std::ios::beg);
-
-    std::string buffer;
-    buffer.resize(static_cast<size_t>(file_size));
-
-    if (!file.read(buffer.data(), file_size)) {
-        // read failure midway, maybe disk threw a tantrum
-        throw std::runtime_error("failed to read complete torrent file: " + file_path.string());
-    }
-
-    return buffer;
-}
+} // namespace bitnulled

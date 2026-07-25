@@ -1,27 +1,13 @@
 #pragma once
-#include <string_view>
-#include <string>
-#include <variant>
-#include <vector>
-#include <cstdint>
-#include <map>
+#include "bitnulled/bencode.hpp"
 
-#include <filesystem>
-
-struct bencode_value;
-
-using bencode_int = std::int64_t;
-using bencode_string = std::string;
-using bencode_list = std::vector<bencode_value>;
-using bencode_dict = std::map<std::string, bencode_value>;
-
-struct bencode_value {
-  std::variant<bencode_int, bencode_string, bencode_list, bencode_dict> data;  
-};
-
-bencode_string parse_string(std::string_view& in);
-bencode_int parse_int(std::string_view& in);
-bencode_value parse_value(std::string_view& in);
-bencode_list parse_list(std::string_view& in);
-bencode_dict parse_dict(std::string_view& in);
-std::string read_torrent_file(const std::filesystem::path& file_path);
+using bitnulled::bencode_value;
+using bitnulled::bencode_int;
+using bitnulled::bencode_string;
+using bitnulled::bencode_list;
+using bitnulled::bencode_dict;
+using bitnulled::parse_string;
+using bitnulled::parse_int;
+using bitnulled::parse_value;
+using bitnulled::parse_list;
+using bitnulled::parse_dict;

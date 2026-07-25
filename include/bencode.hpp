@@ -6,6 +6,8 @@
 #include <cstdint>
 #include <map>
 
+#include <filesystem>
+
 struct bencode_value;
 
 using bencode_int = std::int64_t;
@@ -22,3 +24,4 @@ bencode_int parse_int(std::string_view& in);
 bencode_value parse_value(std::string_view& in);
 bencode_list parse_list(std::string_view& in);
 bencode_dict parse_dict(std::string_view& in);
+std::string read_torrent_file(const std::filesystem::path& file_path);

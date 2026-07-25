@@ -38,3 +38,10 @@ target_link_libraries(test_bencode PRIVATE bitnulled_core)
 
 # Registrar o teste no CTest
 add_test(NAME TestBencode COMMAND test_bencode)
+
+add_executable(test_sha1
+    tests/test_sha1.cpp
+)
+target_link_libraries(test_sha1 PRIVATE bitnulled_core)
+add_test(NAME TestSHA1 COMMAND test_sha1)
+

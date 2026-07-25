@@ -1,6 +1,7 @@
 #include "bencode.hpp"
 #include <string_view>
 #include <string>
+#include <fstream>
 #include <stdexcept>
 
 bencode_string parse_string(std::string_view& in) {
@@ -124,4 +125,31 @@ bencode_dict parse_dict(std::string_view& in) {
     in.remove_prefix(1);
 
     return dict;
+}
+
+std::string read_torrent_file(const std::filesystem::path& file_path) {
+    // open in binary mode at the end to get file size instantly
+    std::ifstream file(file_path, std::ios::binary | std::ios::ate);
+    if (!file.is_open()) {
+        // if this throws, check if the file path exists or if windows access rights hate you
+        throw std::runtime_error("failed to open torrent file: " + file_path.string());
+    }
+
+    const auto file_size = file.tellg();
+    if (file_size <= 0) {
+        // empty torrent file is useless anyway
+        return {};
+    }
+
+    file.seekg(0, std::ios::beg);
+
+    std::string buffer;
+    buffer.resize(static_cast<size_t>(file_size));
+
+    if (!file.read(buffer.data(), file_size)) {
+        // read failure midway, maybe disk threw a tantrum
+        throw std::runtime_error("failed to read complete torrent file: " + file_path.string());
+    }
+
+    return buffer;
 }

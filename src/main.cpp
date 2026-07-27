@@ -4,9 +4,19 @@
 #include <filesystem>
 #include <exception>
 
-int main() {
-    const std::filesystem::path torrent_path = R"(E:\vault\Backup\Download\kali-nethunter-2025.3-generic-arm64-minimal.zip.torrent)";
-    
+int main(int argc, char* argv[]) {
+    if (argc < 2) {
+        std::cerr << "Uso: " << argv[0] << " <caminho_para_arquivo.torrent>\n";
+        return 1;
+    }
+
+    const std::filesystem::path torrent_path = argv[1];
+
+    if (!std::filesystem::exists(torrent_path)) {
+        std::cerr << "Erro: Arquivo nao encontrado: " << torrent_path << "\n";
+        return 1;
+    }
+
     try {
         bitnulled::torrent_file torrent = bitnulled::load_torrent_file(torrent_path);
         

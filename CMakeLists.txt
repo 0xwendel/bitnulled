@@ -40,6 +40,7 @@ add_library(bitnulled_core
     src/utils.cpp
     src/http_client.cpp
     src/tracker.cpp
+    src/peer_wire.cpp
 )
 target_include_directories(bitnulled_core PUBLIC include)
 target_link_libraries(bitnulled_core PUBLIC asio_interface)
@@ -68,3 +69,7 @@ add_test(NAME TestTorrent COMMAND test_torrent)
 add_executable(test_tracker tests/test_tracker.cpp)
 target_link_libraries(test_tracker PRIVATE bitnulled_core)
 add_test(NAME TestTracker COMMAND test_tracker)
+
+add_executable(test_peer_wire tests/test_peer_wire.cpp)
+target_link_libraries(test_peer_wire PRIVATE bitnulled_core)
+add_test(NAME TestPeerWire COMMAND test_peer_wire)

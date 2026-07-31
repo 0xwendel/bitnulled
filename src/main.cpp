@@ -1,10 +1,12 @@
 #include "bitnulled/torrent.hpp"
 #include "bitnulled/tracker.hpp"
+#include "bitnulled/peer_wire.hpp"
 #include "bitnulled/utils.hpp"
 #include <cstdint>
 #include <exception>
 #include <filesystem>
 #include <iostream>
+#include <stdexcept>
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
@@ -52,6 +54,28 @@ int main(int argc, char* argv[]) {
         std::cout << "peers:    " << response.peers.size() << "\n";
         for (const auto& peer : response.peers) {
             std::cout << "  " << peer.ip << ":" << peer.port << "\n";
+        }
+
+        std::cout << "\n=== peer wire handshake ===\n";
+        bool handshake_complete = false;
+        for (const auto& peer : response.peers) {
+            try {
+                const bitnulled::peer_handshake handshake = bitnulled::perform_peer_handshake(
+                    peer.ip, peer.port, torrent.info_hash, peer_id);
+                const std::string remote_peer_id(
+                    handshake.remote_peer_id.begin(), handshake.remote_peer_id.end());
+                std::cout << "connected: " << peer.ip << ":" << peer.port << "\n";
+                std::cout << "remote peer id: " << remote_peer_id << "\n";
+                handshake_complete = true;
+                break;
+            } catch (const std::exception& e) {
+                std::cerr << "handshake failed for " << peer.ip << ":" << peer.port
+                          << ": " << e.what() << "\n";
+            }
+        }
+
+        if (!handshake_complete) {
+            throw std::runtime_error("no tracker peer completed the peer wire handshake");
         }
 
     } catch (const std::exception& e) {
